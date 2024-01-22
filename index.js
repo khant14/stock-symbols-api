@@ -1,7 +1,9 @@
+const NodeCache = require('node-cache');
 const express = require('express');
 const app = express();
+const tickerCache = new NodeCache({ stdTTL: 40000, checkperiod: 10000 });
 
-(async () => {
+const getTickers = async () => {
   const NASDAQ = await fetch('https://raw.githubusercontent.com/khant14/stock-symbols/main/nasdaq.json').then(response => response.json());
   const NYSE = await fetch('https://raw.githubusercontent.com/khant14/stock-symbols/main/nyse.json').then(response => response.json());
   const AMEX = await fetch('https://raw.githubusercontent.com/khant14/stock-symbols/main/amex.json').then(response => response.json());
@@ -15,6 +17,16 @@ const app = express();
   storeTickers(NASDAQ);
   storeTickers(NYSE);
   storeTickers(AMEX);
+  tickerCache.set('tickers', tickers);
+
+  return tickers;
+}
+
+(async () => {
+  let tickers = await getTickers();
+  tickerCache.on("expired", async () => {
+    tickers = await getTickers();
+  });
 
   app.get('/:ticker', (req, res) => {
     const searchTicker = req.params.ticker;
