@@ -2,6 +2,7 @@ const NodeCache = require('node-cache');
 const express = require('express');
 const app = express();
 const tickerCache = new NodeCache({ stdTTL: 40000, checkperiod: 10000 });
+const PORT = process.env.PORT || 8002;
 
 const getTickers = async () => {
   const NASDAQ = await fetch('https://raw.githubusercontent.com/khant14/stock-symbols/main/nasdaq.json').then(response => response.json());
@@ -37,7 +38,7 @@ const getTickers = async () => {
     res.send(combinedResult);
   });
 
-  app.listen(process.env.PORT, () =>
-    console.log(`Listening on port: ${process.env.PORT}!`),
+  app.listen(PORT, () =>
+    console.log(`Listening on port: ${PORT}!`),
   );
 })();
